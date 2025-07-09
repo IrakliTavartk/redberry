@@ -1,0 +1,11 @@
+.navbar-body{
+    display: flex;
+    padding: 30px 120px 20px 30px;
+    justify-content: space-between;
+}
+
+.navbar-body h1{
+    color: #8338EC;
+    
+    
+}
