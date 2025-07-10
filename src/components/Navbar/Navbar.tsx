@@ -5,7 +5,7 @@ import CustomButton from "../Button/CustomButton";
 const Navbar = () => {
   return (
     <nav className="h-[100px]">
-      <div className="mx-auto flex h-full items-center justify-between px-[120px] font-">
+      <div className="mx-auto flex h-full items-center justify-between px-[120px]">
         <div className="cursor-pointer">
           <Image
             src="/imgs/momentum.png"
