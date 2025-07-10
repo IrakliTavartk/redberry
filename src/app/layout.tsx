@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar/Navbar";
 import "../styles/globals.css";
+import { ReduxProvider } from "@/store/provider";
 
 export default function RootLayout({
   children,
@@ -8,11 +9,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-      >
+      <body>
         <Navbar />
-        
-        {children}
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );
