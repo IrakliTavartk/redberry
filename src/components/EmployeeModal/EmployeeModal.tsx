@@ -1,176 +1,289 @@
+import { EmployeeModalProps } from "@/types/propTypes";
+import { EmployeeData } from "@/types/types";
+import { useState } from "react";
+import Modal from "react-modal";
 
-import React, { FormEvent, useState } from 'react';
-import Image from 'next/image';
+const customStyles = {
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
+  },
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    border: "none",
+    borderRadius: "12px",
+    padding: "0",
+    width: "500px",
+    maxWidth: "90vw",
+    maxHeight: "90vh",
+    overflow: "visible",
+  },
+};
 
-interface EmployeeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (employeeData: EmployeeData) => void;
-}
+// Make sure to set this in your main App component
+// Modal.setAppElement("#root");
 
-interface EmployeeData {
-  name: string;
-  email: string;
-  avatar: string;
-  department: string;
-}
-
-const EmployeeModal= ({ isOpen, onClose, onSubmit }: EmployeemodalProps) => {
+const EmployeeModal = ({ isOpen, onClose, onSubmit }: EmployeeModalProps) => {
   const [formData, setFormData] = useState<EmployeeData>({
-    name: '',
-    email: '',
-    avatar: '',
-    department: ''
+    name: "",
+    email: "",
+    position: "",
+    avatar: null,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const [errors, setErrors] = useState<Partial<EmployeeData>>({});
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<EmployeeData> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "სახელი აუცილებელია";
+    } else if (formData.name.length < 2) {
+      newErrors.name = "სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "იმეილი აუცილებელია";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "იმეილის ფორმატი არასწორია";
+    }
+
+    if (!formData.position.trim()) {
+      newErrors.position = "თანამდებობა აუცილებელია";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name as keyof EmployeeData]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        avatar: file,
+      }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({ name: '', email: '', avatar: '', department: '' });
+
+    if (validateForm()) {
+      onSubmit(formData);
+      handleClose();
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      name: "",
+      email: "",
+      position: "",
+      avatar: null,
+    });
+    setErrors({});
+    setAvatarPreview("");
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={handleClose}
+      style={customStyles}
+      contentLabel="თანამშრომლის შექმნა"
+    >
+      <div className="p-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">თანამშრომლის დამატება</h2>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            თანამშრომლის დამატება
+          </h2>
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            onClick={handleClose}
+            className="text-2xl font-light text-gray-400 hover:text-gray-600"
           >
             ×
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          {/* Name Field */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              სახელი*
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="flex items-center mt-1">
-              <span className="text-green-500 text-sm">✓</span>
-              <span className="text-xs text-gray-500 ml-1">სავალდებულო ველების შევსება</span>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name and Email Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                სახელი*
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className={`w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="შეიყვანეთ სახელი"
+              />
+              {errors.name && (
+                <div className="mt-1 flex items-center">
+                  <span className="mr-1 text-xs text-green-500">✓</span>
+                  <span className="text-xs text-red-500">{errors.name}</span>
+                </div>
+              )}
+              {!errors.name && formData.name && (
+                <div className="mt-1 flex items-center">
+                  <span className="mr-1 text-xs text-green-500">✓</span>
+                  <span className="text-xs text-green-600">
+                    მინიმუმ 2 სიმბოლო
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                იმეილი*
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="შეიყვანეთ იმეილი"
+              />
+              {errors.email && (
+                <div className="mt-1 flex items-center">
+                  <span className="mr-1 text-xs text-green-500">✓</span>
+                  <span className="text-xs text-red-500">{errors.email}</span>
+                </div>
+              )}
+              {!errors.email && formData.email && (
+                <div className="mt-1 flex items-center">
+                  <span className="mr-1 text-xs text-green-500">✓</span>
+                  <span className="text-xs text-green-600">სწორი ფორმატი</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Email Field */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              მეილი*
+          {/* Avatar Upload */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              აუატრი*
             </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="flex items-center mt-1">
-              <span className="text-green-500 text-sm">✓</span>
-              <span className="text-xs text-gray-500 ml-1">მეილის ვალიდაცია</span>
-            </div>
-          </div>
-
-          {/* Avatar Section */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ავატარი*
-            </label>
-            <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center">
-              <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center overflow-hidden">
-                {formData.avatar ? (
-                 <Image src={formData.avatar} alt="Avatar" width={64} height={64} className="w-[64px] h-[64px] object-cover" />
+            <div className="flex flex-col items-center">
+              <div className="mb-2 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-200">
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
-                  <span className="text-gray-400">👤</span>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-300">
+                    <span className="text-xs text-gray-500">📷</span>
+                  </div>
                 )}
               </div>
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                      setFormData(prev => ({ ...prev, avatar: e.target?.result as string }));
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
+                onChange={handleAvatarChange}
                 className="hidden"
                 id="avatar-upload"
               />
               <label
                 htmlFor="avatar-upload"
-                className="cursor-pointer text-purple-600 hover:text-purple-800"
+                className="cursor-pointer text-sm text-blue-600 hover:text-blue-800"
               >
-                Upload Image
+                📷 ფოტოს ატვირთვა
               </label>
             </div>
           </div>
 
-          {/* Department Field */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              დეპარტამენტი*
+          {/* Position */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              თანამდებობა*
             </label>
             <select
-              name="department"
-              value={formData.department}
+              name="position"
+              value={formData.position}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+              className={`w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                errors.position ? "border-red-500" : "border-gray-300"
+              }`}
             >
-              <option value="">აირჩიეთ დეპარტამენტი</option>
-              <option value="IT">IT</option>
-              <option value="HR">HR</option>
-              <option value="Finance">Finance</option>
-              <option value="Marketing">Marketing</option>
+              <option value="">აირჩიეთ თანამდებობა</option>
+              <option value="developer">დეველოპერი</option>
+              <option value="designer">დიზაინერი</option>
+              <option value="manager">მენეჯერი</option>
+              <option value="analyst">ანალიტიკოსი</option>
+              <option value="tester">ტესტერი</option>
+              <option value="devops">DevOps</option>
             </select>
+            {errors.position && (
+              <span className="mt-1 text-xs text-red-500">
+                {errors.position}
+              </span>
+            )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              onClick={handleClose}
+              className="rounded-md border border-gray-300 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-50"
             >
               გაუქმება
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="rounded-md bg-purple-600 px-6 py-2 text-white transition-colors hover:bg-purple-700"
             >
-              თანამშრომლის დამატება
+              დამატება თანამშრომლად
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };
 

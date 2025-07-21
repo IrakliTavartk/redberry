@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
-import { Departments, Priorities, Status } from "./types";
+import { Departments, EmployeeData, Priorities, Status } from "./types";
 
 export interface CustomButtonProps {
   filled?: boolean;
   className?: string;
   children: ReactNode;
-   onClick?: () => void; 
+  onClick?: () => void;
 }
 
 export interface StatusHeaderProps {
@@ -19,4 +19,10 @@ export interface FilterDropdownProps {
   options: Departments[] | Priorities[];
   isOpen: boolean;
   onToggle: (isOpen: boolean) => void;
+}
+
+export interface EmployeeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (employeeData: EmployeeData) => void;
 }

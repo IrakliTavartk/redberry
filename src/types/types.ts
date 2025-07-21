@@ -21,9 +21,9 @@ export interface Employees {
   department_id: number;
 }
 
-export interface EmployeeData {
+export type EmployeeData = {
   name: string;
   email: string;
-  avatar: string;
-  department: string;
-}
+  position: string;
+  avatar: File | null;
+};

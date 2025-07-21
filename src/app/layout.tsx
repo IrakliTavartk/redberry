@@ -1,18 +1,23 @@
-
+"use client";
 import Navbar from "@/components/organizms/Navbar/Navbar";
 import "../styles/globals.css";
-import { ReduxProvider } from "@/store/provider";
+import { useEffect } from 'react';
+import Modal from 'react-modal';
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  useEffect(() => {
+    Modal.setAppElement('#__next');
+  }, []);
+
   return (
     <html lang="en">
-      <body>
+      <body id="__next">
         <Navbar />
-        <ReduxProvider>{children}</ReduxProvider>
+        {children}
       </body>
     </html>
   );
