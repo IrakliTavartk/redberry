@@ -1,4 +1,5 @@
-import Navbar from "@/components/Navbar/Navbar";
+
+import Navbar from "@/components/organizms/Navbar/Navbar";
 import "../styles/globals.css";
 import { ReduxProvider } from "@/store/provider";
 
