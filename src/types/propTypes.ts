@@ -26,3 +26,9 @@ export interface EmployeeModalProps {
   onClose: () => void;
   onSubmit: (employeeData: EmployeeData) => void;
 }
+
+export interface LabelProps {
+  title: string;
+  htmlFor: string;
+  isRequired?: boolean;
+}

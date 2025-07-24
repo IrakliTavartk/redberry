@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import CustomButton from "@/components/atoms/Button/CustomButton";
-import EmployeeModal from "@/components/EmployeeModal/EmployeeModal";
+import EmployeeModal from "@/components/molecules/EmployeeModal/EmployeeModal";
 import { EmployeeData } from "@/types/types";
 
 const Navbar = () => {
