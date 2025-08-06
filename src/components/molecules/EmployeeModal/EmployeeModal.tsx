@@ -24,9 +24,11 @@ const customStyles = {
   },
 };
 
+import React from "react";
+
 const EmployeeModal = ({ isOpen, onClose, onSubmit }: EmployeeModalProps) => {
   const handleClose = (
-    event: MouseEvent<Element, MouseEvent> | KeyboardEvent<Element>,
+    event: React.MouseEvent<Element> | React.KeyboardEvent<Element>,
   ): void => {
     event.stopPropagation?.();
     onClose();
@@ -38,11 +40,11 @@ const EmployeeModal = ({ isOpen, onClose, onSubmit }: EmployeeModalProps) => {
       style={customStyles}
       contentLabel="თანამშრომლის შექმნა"
     >
-      <div className="p-20">
+      <div className="flex flex-col pt-10 pb-[60px] px-[50px] gap-[37px] h-full">
         <h2 className="text-c-grey text-center text-[32px] font-medium">
           თანამშრომლის დამატება
         </h2>
-        <CustomForm />
+        <CustomForm onSubmit={onSubmit} />
       </div>
     </Modal>
   );

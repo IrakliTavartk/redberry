@@ -27,3 +27,11 @@ export type EmployeeData = {
   position: string;
   avatar: File | null;
 };
+
+export type EmployeeFormInputTypes = {
+  name: string;
+  lastname: string;
+  department: string;
+  avatar: File;
+  employee: string;
+};

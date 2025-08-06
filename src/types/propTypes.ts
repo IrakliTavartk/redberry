@@ -32,3 +32,12 @@ export interface LabelProps {
   htmlFor: string;
   isRequired?: boolean;
 }
+
+
+export interface CircleAvatarProps {
+  photoSrc: string;
+  size?: number;
+  onRemove?: () => void;
+}
+
+

@@ -1,27 +1,105 @@
+"use client";
+
 import { useForm } from "react-hook-form";
 import Label from "./Label";
-import CheckIcon from "../../../../public/svgs/svgComponents/CheckIcon";
+import CircleAvatar from "@/components/atoms/CircleAvatar/CircleAvatar";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import FilterDropdown from "@/components/molecules/FilterDropdown/FilterDropdown";
+import { Departments } from "@/types/types";
+
+import { getDepartments } from "@/services/generalServices";
+
+import { EmployeeFormInputTypes } from "@/types/types";
 
 const CustomForm = () => {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<Departments[]>([]);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
-    formState: { isSubmitted },
-  } = useForm();
+    reset,
+    formState: { errors },
+  } = useForm<EmployeeFormInputTypes>();
 
-  const nameValue = watch("name", "");
+  // Load departments on component mount
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const departmentData = await getDepartments();
+        setDepartments(departmentData);
+      } catch (error) {
+        console.error("Failed to load departments:", error);
+      }
+    };
 
-  const onSubmit = (data: unknown) => {
+    loadDepartments();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      setValue("avatar", file, { shouldValidate: true });
+    }
+  };
+
+  const handleDepartmentSelect = (selectedOptions: string[]) => {
+    setSelectedDepartments(selectedOptions);
+    // If single selection, set the form value
+    if (selectedOptions.length > 0) {
+      setValue("department", selectedOptions[0], { shouldValidate: true });
+    } else {
+      setValue("department", "", { shouldValidate: true });
+    }
+  };
+
+  const handleDropdownToggle = (dropdownName: string, isOpen: boolean) => {
+    setOpenDropdown(isOpen ? dropdownName : null);
+  };
+
+  const onSubmit = (data: EmployeeFormInputTypes) => {
     console.log("Form submitted with data:", data);
+  };
 
-    // Handle form submission logic here
+  const handleCancel = (showConfirmation: boolean = false) => {
+    if (showConfirmation) {
+      const confirmed = window.confirm('ნამდვილად გსურთ ფორმის გაუქმება?');
+      if (!confirmed) return;
+    }
+    
+    // Reset form fields
+    reset();
+    
+    // Clear preview image
+    setPreview(null);
+    
+    // Clear selected departments
+    setSelectedDepartments([]);
+    
+    // Close any open dropdowns
+    setOpenDropdown(null);
+    
+    // Clear file input manually if needed
+    const fileInput = document.getElementById('photo') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    console.log('Form has been reset');
   };
 
   return (
     <form
-      className="flex h-full flex-col justify-between"
+      className="flex h-full flex-col justify-between gap-4"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex gap-[45px]">
@@ -35,139 +113,161 @@ const CustomForm = () => {
             {...register("name", {
               required: "სახელის შეყვანა აუცილებელია",
               minLength: { value: 2, message: "მინიმუმ 2 სიმბოლო" },
+              maxLength: { value: 255, message: "მაქსიმუმ 255 სიმบოლო" },
+            })}
+            onInput={(e) => {
+              const sanitizedValue = e.currentTarget.value.replace(
+                /[^a-zA-Zა-ჰ\s]/g,
+                "",
+              );
+              setValue("name", sanitizedValue);
+            }}
+            className="h-[45px] rounded-md border border-[#CED4DA] p-2.5"
+          />
+          {errors.name && (
+            <span className="text-[11px] text-red-700">
+              {errors.name.message}
+            </span>
+          )}
+        </div>
+
+        {/* Last Name */}
+        <div className="flex flex-1 flex-col gap-1 pr-2">
+          <Label title="გვარი" htmlFor="lastname" isRequired />
+          <input
+            type="text"
+            id="lastname"
+            {...register("lastname", {
+              required: "გვარის შეყვანა აუცილებელია",
+              minLength: { value: 2, message: "მინიმუმ 2 სიმბოლო" },
               maxLength: { value: 255, message: "მაქსიმუმ 255 სიმბოლო" },
             })}
             onInput={(e) => {
               const sanitizedValue = e.currentTarget.value.replace(
-                /[^a-zA-Zა-ჰ]/g,
+                /[^a-zA-Zა-ჰ\s]/g,
                 "",
               );
-              setValue("name", sanitizedValue, { shouldValidate: true });
-              // trigger("name");
+              setValue("lastname", sanitizedValue, { shouldValidate: true });
             }}
             className="h-[45px] rounded-md border border-[#CED4DA] p-2.5"
           />
-
-          <div className="flex flex-col gap-1 text-[10px]">
-            {/* First Name Validation Messages */}
-            <span
-              className={`flex items-center gap-1 ${
-                nameValue.length >= 2
-                  ? "text-green-500"
-                  : isSubmitted && nameValue < 2
-                    ? "text-red-400"
-                    : "text-[#6C757D]"
-              }`}
-            >
-              <CheckIcon
-                fill={
-                  nameValue.length >= 2
-                    ? "#00C951"
-                    : isSubmitted && nameValue.length < 2
-                      ? "red"
-                      : "#6C757D"
-                }
-                width="16"
-                height="16"
-              />
-              <p>მინიმუმ 2 სიმბოლო</p>
+          {errors.lastname && (
+            <span className="text-[11px] text-red-700">
+              {errors.lastname.message}
             </span>
+          )}
+        </div>
+      </div>
 
-            <span
-              className={`flex items-center gap-1 ${
-                nameValue.length > 255
-                  ? "text-red-400"
-                  : nameValue.length >= 2
-                    ? "text-green-500"
-                    : nameValue.length > 0
-                      ? "text-red-400"
-                      : "text-[#6C757D]"
-              }`}
-            >
-              <CheckIcon
-                fill={
-                  nameValue.length > 255
-                    ? "red"
-                    : nameValue.length >= 2
-                      ? "#00C951"
-                      : nameValue.length > 0
-                        ? "red"
-                        : "#6C757D"
-                }
-                width="16"
-                height="16"
+      {/* Avatar Upload */}
+      <div>
+        <Label title="ფოტო" htmlFor="photo" isRequired />
+        <div className="flex h-[120px] flex-col items-center justify-center rounded-lg border border-dashed border-[#CED4DA]">
+          {preview ? (
+            <div className="relative">
+              <CircleAvatar photoSrc={preview} />
+              <button
+                type="button"
+                onClick={() => {
+                  setPreview(null);
+                  setValue("avatar", null);
+                }}
+                className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <label htmlFor="photo" className="cursor-pointer">
+              <Image
+                src="/svgs/uploadPhoto.svg"
+                alt="upload"
+                width={136}
+                height={50}
               />
-              <p>მაქსიმუმ 255 სიმბოლო</p>
-            </span>
-          </div>
+            </label>
+          )}
+          <input
+            type="file"
+            id="photo"
+            accept="image/*"
+            className="hidden"
+            {...register("avatar", {
+              required: "სურათის ატვირთვა აუცილებელია",
+              validate: {
+                isImage: (file) => {
+                  if (!file) return "სურათის ატვირთვა აუცილებელია";
+                  const validTypes = [
+                    "image/jpeg",
+                    "image/jpg",
+                    "image/png",
+                    "image/gif",
+                    "image/webp",
+                  ];
+                  if (!validTypes.includes(file.type)) {
+                    return "გთხოვთ ატვირთოთ სწორი ფორმატის სურათი";
+                  }
+                  if (file.size > 5 * 1024 * 1024) {
+                    // 5MB limit
+                    return "სურათის ზომა არ უნდა აღემატებოდეს 5MB-ს";
+                  }
+                  return true;
+                },
+              },
+            })}
+            onChange={handleFileChange}
+          />
+        </div>
+        {errors.avatar && (
+          <span className="text-[11px] text-red-700">
+            {errors.avatar.message}
+          </span>
+        )}
+      </div>
+
+      {/* Department Selection */}
+      <div className="relative flex flex-col gap-1">
+        <Label title="დეპარტამენტი" htmlFor="department" isRequired />
+        <div className="border border-[#CED4DA] rounded-md pl-85">
+          <FilterDropdown
+            onSelect={handleDepartmentSelect}
+            selectedValues={selectedDepartments}
+            placeholder=""
+            options={departments}
+            isOpen={openDropdown === "departments"}
+            onToggle={(isOpen) => handleDropdownToggle("departments", isOpen)}
+          />
         </div>
 
-        {/* <div className="flex flex-1 flex-col gap-1">
-            <Label title="გვარი" htmlFor="surname" isRequired />
+        {/* Hidden input for form validation */}
+        <input
+          type="hidden"
+          {...register("department", {
+            required: "დეპარტამენტის არჩევა აუცილებელია",
+          })}
+        />
 
-            <input
-              type="text"
-              id="surname"
-              {...register("surname", {
-                required: "Name is required",
-                minLength: { value: 2, message: "მინიმუმ 2 სიმბოლო" },
-                maxLength: { value: 255, message: "მაქსიმუმ 255 სიმბოლო" },
-              })}
-              onInput={(e) => {
-                const sanitizedValue = e.currentTarget.value.replace(/[^a-zA-Zა-ჰ]/g, "");
-                setValue("surname", sanitizedValue, { shouldValidate: true });
-                trigger("surname");
-              }}
-              className="h-[45px] rounded-md border border-[#CED4DA] p-2.5"
-            />
-            <div className="flex flex-col gap-1 text-[10px]">
-              Last Name Validation Messages
-              <span
-                className={`flex items-center gap-1 ${
-                  surnameValue.length >= 2
-                    ? "text-green-500"
-                    : isSubmitted && surnameValue.length < 2
-                      ? "text-red-400"
-                      : "text-[#6C757D]"
-                }`}
-              >
-                <CheckIcon
-                  fill={surnameValue.length >= 2 ? "#00C951" : isSubmitted && surnameValue.length < 2 ? "red" : "#6C757D"}
-                  width="16"
-                  height="16"
-                />
-                <p>მინიმუმ 2 სიმბოლო</p>
-              </span>
+        {errors.department && (
+          <span className="text-[11px] text-red-700">
+            {errors.department.message}
+          </span>
+        )}
+      </div>
 
-              ✅ Maximum Length Validation
-              <span
-                className={`flex items-center gap-1 ${
-                  surnameValue.length > 255
-                    ? "text-red-400"
-                    : surnameValue.length >= 2
-                      ? "text-green-500"
-                      : surnameValue.length > 0
-                        ? "text-red-400"
-                        : "text-[#6C757D]"
-                }`}
-              >
-                <CheckIcon
-                  fill={
-                    surnameValue.length > 255
-                      ? "red"
-                      : surnameValue.length >= 2
-                        ? "#00C951"
-                        : surnameValue.length > 0
-                          ? "red"
-                          : "#6C757D"
-                  }
-                  width="16"
-                  height="16"
-                />
-                <p>მაქსიმუმ 255 სიმბოლო</p>
-              </span>
-            </div>
-          </div> */}
+      <div className="flex gap-5 pl-9">
+        <button 
+          type="button"
+          onClick={() => handleCancel(false)}
+          className="mt-6 rounded-md bg-[#fff] px-4 py-2 text-[#8338EC] border border-[#8338EC] hover:bg-[#8338EC] hover:text-white transition-colors"
+        >
+          გაუქმება
+        </button>
+        <button
+          type="submit"
+          className="mt-6 rounded-md bg-[#8338EC] px-4 py-2 text-white hover:bg-[#6B2AB8] transition-colors"
+        >
+          თანამშრომლის დამატება
+        </button>
       </div>
     </form>
   );
