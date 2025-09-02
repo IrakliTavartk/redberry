@@ -24,8 +24,6 @@ const customStyles = {
   },
 };
 
-import React from "react";
-
 const EmployeeModal = ({ isOpen, onClose, onSubmit }: EmployeeModalProps) => {
   const handleClose = (
     event: React.MouseEvent<Element> | React.KeyboardEvent<Element>,

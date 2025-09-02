@@ -12,7 +12,7 @@ import { getDepartments } from "@/services/generalServices";
 
 import { EmployeeFormInputTypes } from "@/types/types";
 
-const CustomForm = () => {
+const CustomForm = ({onClose}) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Departments[]>([]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
@@ -72,29 +72,30 @@ const CustomForm = () => {
 
   const handleCancel = (showConfirmation: boolean = false) => {
     if (showConfirmation) {
-      const confirmed = window.confirm('ნამდვილად გსურთ ფორმის გაუქმება?');
+      const confirmed = window.confirm("ნამდვილად გსურთ ფორმის გაუქმება?");
       if (!confirmed) return;
+      
     }
-    
+
     // Reset form fields
     reset();
-    
+
     // Clear preview image
     setPreview(null);
-    
+
     // Clear selected departments
     setSelectedDepartments([]);
-    
+
     // Close any open dropdowns
     setOpenDropdown(null);
-    
+
     // Clear file input manually if needed
-    const fileInput = document.getElementById('photo') as HTMLInputElement;
+    const fileInput = document.getElementById("photo") as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = "";
     }
-    
-    console.log('Form has been reset');
+
+    console.log("Form has been reset");
   };
 
   return (
@@ -228,7 +229,7 @@ const CustomForm = () => {
       {/* Department Selection */}
       <div className="relative flex flex-col gap-1">
         <Label title="დეპარტამენტი" htmlFor="department" isRequired />
-        <div className="border border-[#CED4DA] rounded-md pl-85">
+        <div className="rounded-md border border-[#CED4DA] pl-85">
           <FilterDropdown
             onSelect={handleDepartmentSelect}
             selectedValues={selectedDepartments}
@@ -255,16 +256,16 @@ const CustomForm = () => {
       </div>
 
       <div className="flex gap-5 pl-9">
-        <button 
+        <button
           type="button"
           onClick={() => handleCancel(false)}
-          className="mt-6 rounded-md bg-[#fff] px-4 py-2 text-[#8338EC] border border-[#8338EC] hover:bg-[#8338EC] hover:text-white transition-colors"
+          className="mt-6 cursor-pointer rounded-md border border-[#8338EC] bg-[#fff] px-4 py-2 text-[#8338EC] transition-colors hover:bg-[#8338EC] hover:text-white"
         >
           გაუქმება
         </button>
         <button
           type="submit"
-          className="mt-6 rounded-md bg-[#8338EC] px-4 py-2 text-white hover:bg-[#6B2AB8] transition-colors"
+          className="mt-6 rounded-md bg-[#8338EC] px-4 py-2 text-white transition-colors hover:bg-[#6B2AB8]"
         >
           თანამშრომლის დამატება
         </button>

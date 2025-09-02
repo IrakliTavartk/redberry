@@ -6,6 +6,7 @@ export interface CustomButtonProps {
   className?: string;
   children: ReactNode;
   onClick?: () => void;
+  
 }
 
 export interface StatusHeaderProps {

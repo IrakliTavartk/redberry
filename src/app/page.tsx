@@ -11,6 +11,9 @@ import {
 import { Employees, Departments, Priorities, Status } from "@/types/types";
 import { useEffect, useState } from "react";
 
+
+
+
 export default function Home() {
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [departments, setDepartments] = useState<Departments[]>([]);
@@ -65,8 +68,9 @@ export default function Home() {
       setOpenDropdown(null);
     }
   };
-
+  
   return (
+
     <div>
       <div className="flex w-full flex-col gap-20 px-[120px]">
         <h1 className="text-c-grey mt-[38px] text-[34px] font-semibold">

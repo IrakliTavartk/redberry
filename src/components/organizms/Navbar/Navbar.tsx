@@ -4,14 +4,23 @@ import Image from "next/image";
 import CustomButton from "@/components/atoms/Button/CustomButton";
 import EmployeeModal from "@/components/molecules/EmployeeModal/EmployeeModal";
 import { EmployeeData } from "@/types/types";
+import { useRouter } from "next/navigation";
+import CreateEmployee from "@/components/molecules/CreateEmployee/CreateEmployee";
 
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const router = useRouter();
 
   const handleSubmit = (employeeData: EmployeeData) => {
     console.log("Submitted Employee Data:", employeeData);
     setIsModalOpen(false);
   };
+
+
+const handleLinkChange = (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  router.push('/CreateEmploye'); 
+};
 
   return (
     <nav className="h-[100px]">
@@ -35,7 +44,8 @@ const Navbar = () => {
           <CustomButton onClick={() => setIsModalOpen(true)}>
             თანამშრომლის შექმნა
           </CustomButton>
-          <CustomButton filled>
+
+          <CustomButton filled onClick={handleLinkChange} href={CreateEmployee}>
             <Image src="/svgs/plus.svg" alt="logo" width={20} height={20} />
             შექმენი ახალი დავალება
           </CustomButton>

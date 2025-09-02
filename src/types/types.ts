@@ -35,3 +35,5 @@ export type EmployeeFormInputTypes = {
   avatar: File;
   employee: string;
 };
+
+
